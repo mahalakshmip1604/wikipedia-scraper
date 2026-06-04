@@ -40,21 +40,6 @@ class CountryLeadersAPI:
             return None
         return countries
     
-    def get_first_paragraph(wikipedia_url, session):
-        print(wikipedia_url)  # keep this for the rest of the notebook
-        headers = {"User-Agent": "Mozilla/5.0 (Wikipedia scraper exercise)"}
-        response = session.get(wikipedia_url, headers=headers)
-        soup = BeautifulSoup(response.text, "html.parser")  
-
-        first_paragraph = ""
-        for paragraph in soup.find_all("p"):
-            if paragraph.find("b"):
-                first_paragraph = paragraph.text
-                break
-
-    # sanitize the text with a series of regular expressions
-        first_paragraph = re.sub(r"\[[^\]]*\]", "", first_paragraph)        # [1], [a], [note 2]
-        return first_paragraph
 
     def get_leaders(self):
         countries = self.get_countries()
@@ -70,12 +55,7 @@ class CountryLeadersAPI:
                 self.refresh_cookie()
                 req = self.session.get(self.leaders_endpoint, params={"country": country})
                 leaders = req.json()
-
-                for leader in leaders:
-                # 2. pass the shared session to get_first_paragraph()
-                    leader["first_paragraph"] = self.get_first_paragraph(leader["wikipedia_url"], self.session)
-                    leaders_per_country[country] = leaders
-
+                leaders_per_country[country] = leaders
             return leaders_per_country
 
         if response.status_code == 200:
@@ -84,7 +64,3 @@ class CountryLeadersAPI:
             print("Failed to fetch leaders. Status code:", response.status_code)
             return None
     
-
-
-get_leaders = CountryLeadersAPI().get_countries()
-print(get_leaders)
