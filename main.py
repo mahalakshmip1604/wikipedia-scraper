@@ -2,9 +2,8 @@
 
 Instantiate the API client to get the leaders, instantiate the HTML scraper to
 get each leader's Wikipedia first paragraph, then write the combined result to
-a JSON file. Run with: python main2.py
+a JSON file. Run with: python main.py
 """
-from asyncio.log import logger
 import json
 import logging
 
