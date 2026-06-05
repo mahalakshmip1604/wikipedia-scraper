@@ -26,29 +26,26 @@ class CountryLeadersAPI:
         self.cookies_endpoint: str = "/cookie"
         # A single persistent session keeps the TCP connection alive and carries
         # the authentication cookie across every request.
+        self.session_timeout: int = 10
         self.session: requests.Session = requests.Session()
         self.refresh_cookie()
 
     def refresh_cookie(self) -> None:
-        """Refresh the session cookie when it is missing or expired."""
-        # Reuse the existing cookie while it is still valid.
-        for cookie in self.session.cookies:
-            if cookie.expires is None or cookie.expires > 0:
-                # A cookie without an explicit expiry is treated as session-valid;
-                # only fetch a new one once the API rejects it (handled by callers).
-                pass
-
-        response = self.session.get(self.base_url + self.cookies_endpoint, timeout=10)
+        """Fetch a fresh authentication cookie from the API.
+        Callers handle expiry by retrying once on a non-200 response, so this
+        always requests a new cookie rather than trying to validate the old one.
+        """
+        response = self.session.get(self.base_url + self.cookies_endpoint, timeout=self.session_timeout)
         response.raise_for_status()
         logger.info("Cookie refreshed.")
 
     def get_countries(self) -> list[str]:
         """Return the list of supported country codes (e.g. ``["fr", "be", ...]``)."""
-        response = self.session.get(self.base_url + self.country_endpoint, timeout=10)
+        response = self.session.get(self.base_url + self.country_endpoint, timeout=self.session_timeout)
         if response.status_code != 200:
             # The cookie may have expired; refresh once and retry.
             self.refresh_cookie()
-            response = self.session.get(self.base_url + self.country_endpoint, timeout=10)
+            response = self.session.get(self.base_url + self.country_endpoint, timeout=self.session_timeout)
         response.raise_for_status()
         return response.json()
 
@@ -57,7 +54,7 @@ class CountryLeadersAPI:
         response = self.session.get(
             self.base_url + self.leaders_endpoint,
             params={"country": country},
-            timeout=10,
+            timeout=self.session_timeout,
         )
         if response.status_code != 200:
             # The cookie may expire mid-loop: refresh it and retry once.
@@ -65,7 +62,7 @@ class CountryLeadersAPI:
             response = self.session.get(
                 self.base_url + self.leaders_endpoint,
                 params={"country": country},
-                timeout=10,
+                timeout=self.session_timeout,
             )
         response.raise_for_status()
         return response.json()

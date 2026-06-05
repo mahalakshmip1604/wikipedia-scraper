@@ -4,23 +4,27 @@ Instantiate the API client to get the leaders, instantiate the HTML scraper to
 get each leader's Wikipedia first paragraph, then write the combined result to
 a JSON file. Run with: python main2.py
 """
+from asyncio.log import logger
 import json
+import logging
 
 from src.api_client import CountryLeadersAPI
 from src.html_scraper import WikipediaScraper
-
+logger = logging.getLogger(__name__)
 OUTPUT_FILE = "leaders_data.json"
 
 
 def main():
     api = CountryLeadersAPI()
     scraper = WikipediaScraper(session=api.session)
-
+    
     leaders_per_country = {}
     countries = api.get_countries()
+
     if not countries:
-        print("No countries available to fetch leaders.")
-        return None
+        logger.error("No countries available to fetch leaders.")
+        raise RuntimeError("API returned empty country list")
+    
     for country in countries:
         leaders = api.get_leaders(country)
         for leader in leaders:
@@ -34,3 +38,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
