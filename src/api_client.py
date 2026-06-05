@@ -1,3 +1,12 @@
+"""Track 1 - The API Client (src/api_client.py)
+The API client is responsible for communicating with the country leaders API,
+fetching the list of countries and their leaders, and handling cookies and
+authentication as needed. It should be designed to be easily testable and
+decoupled from the HTML scraping logic (Track 2). The API client should also 
+handle any necessary error handling and retries, especially in the case of
+expired cookies or failed requests.
+"""
+
 import re
 from urllib import response
 from wsgiref import headers
@@ -5,16 +14,20 @@ from wsgiref import headers
 import requests
 from bs4 import BeautifulSoup
 import time
-# comment
+
+
 class CountryLeadersAPI:
+    """Client for the country leaders API, responsible for fetching countries and leaders."""
     def __init__(self):
         self.base_url = "https://country-leaders.onrender.com"
         self.country_endpoint = "/country/{country_code}"
         self.leaders_endpoint = "/leaders"
-        cookies_endpoint = "/cookies"
+        self.cookies_endpoint = "/cookies"
         self.session = requests.Session()
 
     def refresh_cookie(self):
+        """Refresh the cookie by making a request to the cookies endpoint. 
+        This should be called when a request fails due to an expired cookie."""
      # Check whether a valid cookie already exists
         for cookie in self.session.cookies:
             if cookie.expires and cookie.expires > time.time():
@@ -31,6 +44,8 @@ class CountryLeadersAPI:
             
 
     def get_countries(self):
+        """Fetch the list of countries from the API. This method should handle 
+        any necessary authentication and error handling."""
         response = self.session.get(self.base_url + self.country_endpoint, cookies=self.session.cookies)
                 
         if response.status_code == 200:
@@ -42,6 +57,9 @@ class CountryLeadersAPI:
     
 
     def get_leaders(self):
+        """Fetch the list of leaders for each country from the API. 
+        This method should handle any necessary authentication and error handling, 
+        including refreshing cookies if needed."""
         countries = self.get_countries()
         if not countries:
             print("No countries available to fetch leaders.")
@@ -50,17 +68,9 @@ class CountryLeadersAPI:
         self.session.headers.update({"User-Agent": "Mozilla/5.0 (Wikipedia scraper exercise)"}) 
         leaders_per_country = {}
         for country in countries:
-            req = self.session.get(self.leaders_endpoint, params={"country": country})
-            if req.status_code != 200:  # refresh expired cookie and retry
+            response = self.session.get(self.leaders_endpoint,cookies=self.session.cookies, params={"country": country})
+            if response.status_code != 200:  # refresh expired cookie and retry
                 self.refresh_cookie()
-                req = self.session.get(self.leaders_endpoint, params={"country": country})
-                leaders = req.json()
-                leaders_per_country[country] = leaders
-            return leaders_per_country
-
-        if response.status_code == 200:
-            return response.json()
-        else:
-            print("Failed to fetch leaders. Status code:", response.status_code)
-            return None
-    
+                response = self.session.get(self.leaders_endpoint, cookies=self.session.cookies, params={"country": country})
+            leaders = response.json()
+        return leaders
