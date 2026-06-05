@@ -7,3 +7,25 @@ __pycache__/
 # Cython cache
 *.c
 *.cpp
+
+# Virtual environments
+venv/
+env/
+wikipedia_scraper_env/  # Mentioned in README!
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# System
+.DS_Store
+
+# Output files (to avoid committing generated data)
+# leaders_data.json  (currently committed)
+*.csv
+
+# Notebooks
+.ipynb_checkpoints/
+*.ipynb_checkpoints
