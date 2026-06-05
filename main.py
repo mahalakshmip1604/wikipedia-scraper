@@ -1,4 +1,4 @@
-"""main2.py — minimal MVP pipeline (no optional features).
+"""main2.py — SIMPLE minimal MVP pipeline (no optional features).
 
 Instantiate the API client to get the leaders, instantiate the HTML scraper to
 get each leader's Wikipedia first paragraph, then write the combined result to
