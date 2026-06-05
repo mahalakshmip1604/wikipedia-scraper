@@ -30,14 +30,11 @@ class CountryLeadersAPI:
         self.refresh_cookie()
 
     def refresh_cookie(self) -> None:
-        """Refresh the session cookie when it is missing or expired."""
-        # Reuse the existing cookie while it is still valid.
-        for cookie in self.session.cookies:
-            if cookie.expires is None or cookie.expires > 0:
-                # A cookie without an explicit expiry is treated as session-valid;
-                # only fetch a new one once the API rejects it (handled by callers).
-                pass
+        """Fetch a fresh authentication cookie from the API.
 
+        Callers handle expiry by retrying once on a non-200 response, so this
+        always requests a new cookie rather than trying to validate the old one.
+        """
         response = self.session.get(self.base_url + self.cookies_endpoint, timeout=10)
         response.raise_for_status()
         logger.info("Cookie refreshed.")
