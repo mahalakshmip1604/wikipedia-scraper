@@ -78,13 +78,6 @@ class WikipediaScraper:
         """Convenience helper: fetch ``url`` and return its first paragraph."""
         return self.get_first_paragraph(self.fetch_html(url))
 
-    def to_json_file(self, filepath: str) -> None:
-        """Store the accumulated :attr:`data` structure into a JSON file."""
-        with open(filepath, "w", encoding="utf-8") as f:
-            json.dump(self.data, f, ensure_ascii=False, indent=2)
-        logger.info("Wrote %s", filepath)
-
-
 if __name__ == "__main__":
     # Quick self-test against a few articles in different languages.
     logging.basicConfig(level=logging.INFO)
