@@ -17,7 +17,11 @@ def main():
     scraper = WikipediaScraper(session=api.session)
 
     leaders_per_country = {}
-    for country in api.get_countries():
+    countries = api.get_countries()
+    if not countries:
+        print("No countries available to fetch leaders.")
+        return None
+    for country in countries:
         leaders = api.get_leaders(country)
         for leader in leaders:
             leader["first_paragraph"] = scraper.scrape_first_paragraph(leader["wikipedia_url"])
